@@ -43,6 +43,10 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
 }
 
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    archiveFileName.set("crud-app.jar")
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
