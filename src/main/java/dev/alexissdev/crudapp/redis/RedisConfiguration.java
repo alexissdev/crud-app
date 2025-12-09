@@ -9,6 +9,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 public class RedisConfiguration {
 
     public static final String PRODUCT_KEY = "product:%s";
+    public static final String LOGIN_KEY = "login:%s";
+    public static final String REFRESH_TOKEN_KEY = "refresh_token:%s";
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
