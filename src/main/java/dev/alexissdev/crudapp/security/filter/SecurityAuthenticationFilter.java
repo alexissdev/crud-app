@@ -3,6 +3,7 @@ package dev.alexissdev.crudapp.security.filter;
 import dev.alexissdev.crudapp.security.response.SecurityAuthResponse;
 import dev.alexissdev.crudapp.security.response.SecurityLoginResponse;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -69,7 +70,7 @@ public class SecurityAuthenticationFilter
                         .stream()
                         .map(GrantedAuthority::getAuthority)
                         .toList())
-                .signWith(SECRET_KEY)
+                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                 .compact();
 
         response.addHeader(HEADER_STRING, String.format("%s%s", TOKEN_PREFIX, jwt));
