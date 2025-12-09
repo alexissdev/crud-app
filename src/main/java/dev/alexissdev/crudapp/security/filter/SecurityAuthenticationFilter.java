@@ -1,5 +1,6 @@
 package dev.alexissdev.crudapp.security.filter;
 
+import dev.alexissdev.crudapp.redis.RedisConfiguration;
 import dev.alexissdev.crudapp.security.response.SecurityAuthResponse;
 import dev.alexissdev.crudapp.security.response.SecurityLoginResponse;
 import io.jsonwebtoken.Jwts;
@@ -7,6 +8,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import static dev.alexissdev.crudapp.mapper.ObjectMapperFactory.MAPPER;
 import static dev.alexissdev.crudapp.security.response.SecurityHttpResponse.sendAuthorization;
@@ -27,9 +30,11 @@ public class SecurityAuthenticationFilter
         extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
+    private final RedisTemplate<String, Object> redis;
 
-    public SecurityAuthenticationFilter(AuthenticationManager authenticationManager) {
+    public SecurityAuthenticationFilter(AuthenticationManager authenticationManager, RedisTemplate<String, Object> redis) {
         this.authenticationManager = authenticationManager;
+        this.redis = redis;
 
         this.setFilterProcessesUrl("/api/auth/login");
     }
@@ -38,6 +43,14 @@ public class SecurityAuthenticationFilter
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException {
         try {
+            String ip = request.getRemoteAddr();
+            String key = String.format(RedisConfiguration.LOGIN_KEY, ip);
+            long attemps = redis.opsForValue().increment(key);
+            redis.expire(key, 1, TimeUnit.MINUTES);
+            if (attemps > 5) {
+                throw new AuthenticationServiceException("Too many login attemps from this IP");
+            }
+
             SecurityLoginResponse loginResponse = MAPPER.readValue(request.getInputStream(), SecurityLoginResponse.class);
             if (loginResponse.username() == null || loginResponse.password() == null) {
                 throw new AuthenticationServiceException("Username or password is missing");
@@ -85,6 +98,9 @@ public class SecurityAuthenticationFilter
                 String.format("User %s has logged in successfully", user.getUsername()), jwt, refreshJwt);
 
         sendAuthorization(response, MAPPER.writeValueAsBytes(authResponse));
+
+        // Delete login attemps from Redis
+        redis.delete(String.format(RedisConfiguration.LOGIN_KEY, request.getRemoteAddr()));
     }
 
     @Override

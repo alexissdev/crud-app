@@ -8,6 +8,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -29,10 +30,12 @@ import java.util.List;
 public class SpringSecurityConfiguration {
 
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final RedisTemplate<String, Object> redis;
 
     @Autowired
-    public SpringSecurityConfiguration(AuthenticationConfiguration authenticationConfiguration) {
+    public SpringSecurityConfiguration(AuthenticationConfiguration authenticationConfiguration, RedisTemplate<String, Object> redis) {
         this.authenticationConfiguration = authenticationConfiguration;
+        this.redis = redis;
     }
 
     @Bean
@@ -71,7 +74,7 @@ public class SpringSecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) {
         http
                 .cors(Customizer.withDefaults())
-                .addFilter(new SecurityAuthenticationFilter(authenticationManager()))
+                .addFilter(new SecurityAuthenticationFilter(authenticationManager(), redis))
                 .addFilter(new SecurityValidationTokenFilter(authenticationManager()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
