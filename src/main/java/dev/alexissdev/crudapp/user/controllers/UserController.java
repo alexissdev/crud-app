@@ -47,15 +47,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(user));
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<User> register(@Valid @RequestBody User user) {
-        if (user.isAdmin()) {
-            user.setAdmin(false);
-        }
-
-        return create(user);
-    }
-
     @DeleteMapping
     public ResponseEntity<User> delete(@Valid @RequestBody User user) {
         return userService.delete(user)

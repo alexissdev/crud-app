@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static dev.alexissdev.crudapp.mapper.ObjectMapperFactory.MAPPER;
-import static dev.alexissdev.crudapp.security.token.SecurityTokenConfiguration.HEADER_STRING;
-import static dev.alexissdev.crudapp.security.token.SecurityTokenConfiguration.SECRET_KEY;
-import static dev.alexissdev.crudapp.security.token.SecurityTokenConfiguration.TOKEN_PREFIX;
+import static dev.alexissdev.crudapp.security.token.configuration.SecurityTokenConfiguration.HEADER_STRING;
+import static dev.alexissdev.crudapp.security.token.configuration.SecurityTokenConfiguration.SECRET_KEY;
+import static dev.alexissdev.crudapp.security.token.configuration.SecurityTokenConfiguration.TOKEN_PREFIX;
 import static dev.alexissdev.crudapp.security.response.SecurityHttpResponse.sendUnauthorized;
 
 public class SecurityValidationTokenFilter

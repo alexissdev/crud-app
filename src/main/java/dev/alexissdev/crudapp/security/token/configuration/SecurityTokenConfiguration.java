@@ -1,4 +1,4 @@
-package dev.alexissdev.crudapp.security.token;
+package dev.alexissdev.crudapp.security.token.configuration;
 
 import io.jsonwebtoken.Jwts;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -13,6 +13,7 @@ import java.util.Map;
 public class SecurityTokenConfiguration {
 
     public static final long EXPIRATION_TIME = 3600_000;
+    public static final long REFRESH_EXPIRATION = 864_000_000;
     public static final SecretKey SECRET_KEY = Jwts.SIG.HS256.key().build();
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String HEADER_STRING = "Authorization";

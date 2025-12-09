@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-import static dev.alexissdev.crudapp.security.token.SecurityTokenConfiguration.*;
+import static dev.alexissdev.crudapp.security.token.configuration.SecurityTokenConfiguration.*;
 
 public class SecurityHttpResponse {
 

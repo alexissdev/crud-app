@@ -19,13 +19,9 @@ import java.io.IOException;
 import java.util.Date;
 
 import static dev.alexissdev.crudapp.mapper.ObjectMapperFactory.MAPPER;
-import static dev.alexissdev.crudapp.security.token.SecurityTokenConfiguration.AUTH_ERRORS;
-import static dev.alexissdev.crudapp.security.token.SecurityTokenConfiguration.EXPIRATION_TIME;
-import static dev.alexissdev.crudapp.security.token.SecurityTokenConfiguration.HEADER_STRING;
-import static dev.alexissdev.crudapp.security.token.SecurityTokenConfiguration.SECRET_KEY;
-import static dev.alexissdev.crudapp.security.token.SecurityTokenConfiguration.TOKEN_PREFIX;
 import static dev.alexissdev.crudapp.security.response.SecurityHttpResponse.sendAuthorization;
 import static dev.alexissdev.crudapp.security.response.SecurityHttpResponse.sendUnauthorized;
+import static dev.alexissdev.crudapp.security.token.configuration.SecurityTokenConfiguration.*;
 
 public class SecurityAuthenticationFilter
         extends UsernamePasswordAuthenticationFilter {
@@ -34,6 +30,8 @@ public class SecurityAuthenticationFilter
 
     public SecurityAuthenticationFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
+
+        this.setFilterProcessesUrl("/api/auth/login");
     }
 
     @Override
@@ -73,10 +71,18 @@ public class SecurityAuthenticationFilter
                 .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                 .compact();
 
+        String refreshJwt = Jwts.builder()
+                .subject(user.getUsername())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION))
+                .signWith(SECRET_KEY)
+                .compact();
+
+
         response.addHeader(HEADER_STRING, String.format("%s%s", TOKEN_PREFIX, jwt));
 
         SecurityAuthResponse authResponse = new SecurityAuthResponse(user.getUsername(),
-                String.format("User %s has logged in successfully", user.getUsername()), jwt);
+                String.format("User %s has logged in successfully", user.getUsername()), jwt, refreshJwt);
 
         sendAuthorization(response, MAPPER.writeValueAsBytes(authResponse));
     }
@@ -85,7 +91,7 @@ public class SecurityAuthenticationFilter
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
         String message = AUTH_ERRORS.getOrDefault(failed.getClass(), "Authentication failed");
         logger.warn("Authentication error: {}", failed);
-        SecurityAuthResponse authResponse = new SecurityAuthResponse(null, message, null);
+        SecurityAuthResponse authResponse = new SecurityAuthResponse(null, message, null, null);
 
         response.addHeader("WWW-Authenticate", "Bearer");
         sendUnauthorized(response, MAPPER.writeValueAsBytes(authResponse));
