@@ -22,7 +22,7 @@ Production-ready REST API built with **Spring Boot** implementing a complete **J
 * MySQL
 * Docker & Docker Compose
 * Lombok
-* Maven
+* gradle
 
 ---
 
